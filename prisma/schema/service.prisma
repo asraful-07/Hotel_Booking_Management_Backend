@@ -1,0 +1,9 @@
+model Service {
+  id          String   @id @default(uuid())
+  name        String
+  price       Decimal  @db.Decimal(10, 2)
+  type        String   // PER_NIGHT / PER_PERSON
+  isActive    Boolean  @default(true)
+
+  reservations ReservationService[]
+}

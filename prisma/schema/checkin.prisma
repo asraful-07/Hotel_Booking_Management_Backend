@@ -1,0 +1,16 @@
+model Checkin {
+  id            String        @id @default(uuid()) 
+  reservationId String        @unique @map("reservation_id") 
+  roomId        String        @map("room_id")
+  checkinTime   DateTime      @map("checkin_time") @db.Timestamp(6)
+  checkoutTime  DateTime?     @map("checkout_time") @db.Timestamp(6)
+  status        CheckinStatus @default(PENDING)
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade, name: "checkin_reservation")
+  room        Room        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("checkins")
+}

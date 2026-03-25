@@ -1,0 +1,50 @@
+model Reservation {
+  id             String   @id @default(uuid()) 
+  userId         String   @map("user_id") 
+  roomId         String   @map("room_id") 
+
+  checkInDate    DateTime
+  checkOutDate   DateTime
+
+  adults         Int      @default(1)   // 👈 NEW
+  children       Int      @default(0)   // 👈 NEW
+  roomsBooked    Int      @default(1)   // 👈 NEW (multiple room)
+  extraBed       Int      @default(0)   // 👈 NEW
+
+  totalPrice     Decimal  @db.Decimal(10, 2)
+
+  status         ReservationStatus @default(HOLD)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room           Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  payment        Payment?          @relation("payment_reservation")
+  checkin        Checkin?          @relation("checkin_reservation")
+  documents      ReservationDocument[] @relation("reservation_documents")
+  services       ReservationService[] // 👈 NEW
+}
+
+model ReservationService {
+  id             String   @id @default(uuid()) 
+  reservationId  String   
+  serviceId      String   
+
+  quantity       Int      @default(1)
+
+  reservation Reservation @relation(fields: [reservationId], references: [id])
+  service     Service     @relation(fields: [serviceId], references: [id])
+}
+
+model ReservationDocument {
+  id            String   @id @default(uuid()) 
+  reservationId String   @map("reservation_id") 
+  documentType  String   @map("document_type")
+  documentUrl   String   @map("document_url")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  reservation Reservation @relation("reservation_documents", fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@map("reservation_documents")
+}
