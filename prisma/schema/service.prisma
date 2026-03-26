@@ -7,3 +7,14 @@ model Service {
 
   reservations ReservationService[]
 }
+
+model ReservationService {
+  id             String   @id @default(uuid()) 
+  reservationId  String   
+  serviceId      String   
+
+  quantity       Int      @default(1)
+
+  reservation Reservation @relation(fields: [reservationId], references: [id])
+  service     Service     @relation(fields: [serviceId], references: [id])
+}

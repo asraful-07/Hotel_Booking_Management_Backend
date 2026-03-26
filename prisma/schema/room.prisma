@@ -16,8 +16,8 @@ model Room {
   reviews      Review[]
   wishlists    Wishlist[]
 
-  extraBedPrice Decimal? @db.Decimal(10,2) // 👈 NEW
-  maxExtraBed   Int      @default(0)       // 👈 NEW
+  extraBedPrice Decimal? @db.Decimal(10,2) 
+  maxExtraBed   Int      @default(0)       
 
   @@map("rooms")
 }

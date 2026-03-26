@@ -6,10 +6,10 @@ model Reservation {
   checkInDate    DateTime
   checkOutDate   DateTime
 
-  adults         Int      @default(1)   // 👈 NEW
-  children       Int      @default(0)   // 👈 NEW
-  roomsBooked    Int      @default(1)   // 👈 NEW (multiple room)
-  extraBed       Int      @default(0)   // 👈 NEW
+  adults         Int      @default(1)   
+  children       Int      @default(0)   
+  roomsBooked    Int      @default(1)   
+  extraBed       Int      @default(0)   
 
   totalPrice     Decimal  @db.Decimal(10, 2)
 
@@ -23,18 +23,7 @@ model Reservation {
   payment        Payment?          @relation("payment_reservation")
   checkin        Checkin?          @relation("checkin_reservation")
   documents      ReservationDocument[] @relation("reservation_documents")
-  services       ReservationService[] // 👈 NEW
-}
-
-model ReservationService {
-  id             String   @id @default(uuid()) 
-  reservationId  String   
-  serviceId      String   
-
-  quantity       Int      @default(1)
-
-  reservation Reservation @relation(fields: [reservationId], references: [id])
-  service     Service     @relation(fields: [serviceId], references: [id])
+  services       ReservationService[] 
 }
 
 model ReservationDocument {
