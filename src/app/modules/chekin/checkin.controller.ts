@@ -6,12 +6,11 @@ import { CheckinService } from "./checkin.service";
 
 const createCheckin = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
-
   const result = await CheckinService.createCheckin(payload);
   sendResponse(res, {
-    httpStatusCode: status.OK,
+    httpStatusCode: status.CREATED,
     success: true,
-    message: "Create checkin successfully",
+    message: "Check-in created successfully",
     data: result,
   });
 });
@@ -21,22 +20,22 @@ const getsCheckin = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,
-    message: "Fetch checkin successfully",
+    message: "Check-ins fetched successfully",
     data: result,
   });
 });
 
 const updateCheckinStatus = catchAsync(async (req: Request, res: Response) => {
+  const { checkinId } = req.params;
   const payload = req.body;
-
   const result = await CheckinService.updateCheckinStatus(
+    checkinId as string,
     payload,
-    req.params.id as string,
   );
   sendResponse(res, {
-    httpStatusCode: status.CREATED,
+    httpStatusCode: status.OK,
     success: true,
-    message: "Update checkin status successfully",
+    message: `Status updated to ${result.status}`,
     data: result,
   });
 });
