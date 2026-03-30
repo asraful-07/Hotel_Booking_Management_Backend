@@ -2,7 +2,6 @@ import status from "http-status";
 import { PaymentMethod, PaymentStatus } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelper/AppError";
 import { prisma } from "../../lib/prisma";
-// import { ICreatePaymentPayload, IPaymentResponse } from "./payment.interface";
 import axios from "axios";
 import { envVars } from "../../config/env";
 import qs from "qs";
@@ -19,7 +18,7 @@ export const createPayment = async (payload: any) => {
     throw new Error("Reservation not found");
   }
 
-  // ✅ use reservationId as tran_id (simpler & safer)
+  // use reservationId as tran_id (simpler & safer)
   const tran_id = reservationId;
 
   const post_data = {
@@ -28,12 +27,9 @@ export const createPayment = async (payload: any) => {
     total_amount: amount,
     currency: "BDT",
     tran_id,
-
-    // ✅ IMPORTANT: send tran_id back in success URL
     success_url: `${envVars.BACKEND_URL}/api/v1/payment/success`,
     fail_url: `${envVars.BACKEND_URL}/api/v1/payment/fail`,
     cancel_url: `${envVars.BACKEND_URL}/api/v1/payment/cancel`,
-
     cus_name: reservation.user?.name || "Guest",
     cus_email: reservation.user.email,
     cus_add1: "Dhaka",
@@ -49,56 +45,71 @@ export const createPayment = async (payload: any) => {
     },
   });
 
-  console.log("SSL RESPONSE:", response.data);
+  // console.log("SSL RESPONSE:", response.data);
 
   return {
     redirectUrl: response.data.GatewayPageURL,
   };
 };
 
-export const handlePaymentSuccess = async (tran_id: string) => {
-  if (!tran_id) {
-    throw new Error("Transaction ID missing");
+export const handlePaymentSuccess = async (req: any, res: any) => {
+  try {
+    const { tran_id } = req.body;
+
+    console.log("SSL SUCCESS BODY:", req.body);
+
+    if (!tran_id) {
+      throw new Error("Transaction ID missing");
+    }
+
+    const reservationId = tran_id;
+
+    const reservation = await prisma.reservation.findUnique({
+      where: { id: reservationId },
+    });
+
+    if (!reservation) {
+      throw new AppError(status.NOT_FOUND, "Reservation not found");
+    }
+
+    // payment update/create
+    await prisma.payment.upsert({
+      where: {
+        reservationId,
+      },
+      update: {
+        amount: reservation.totalPrice,
+        status: PaymentStatus.SUCCESS,
+        transactionId: tran_id,
+        paymentMethod: PaymentMethod.SSLCOMMERZ,
+      },
+      create: {
+        reservationId,
+        amount: reservation.totalPrice,
+        currency: "BDT",
+        status: PaymentStatus.SUCCESS,
+        transactionId: tran_id,
+        paymentMethod: PaymentMethod.SSLCOMMERZ,
+      },
+    });
+
+    // reservation confirm
+    await prisma.reservation.update({
+      where: { id: reservationId },
+      data: {
+        status: "CONFIRMED",
+      },
+    });
+
+    // FINAL REDIRECT (MOST IMPORTANT)
+    return res.redirect(
+      `${envVars.FRONTEND_URL}/payment/payment-success/${reservationId}`,
+    );
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({
+      status: "fail",
+      message: err.message,
+    });
   }
-
-  const reservationId = tran_id;
-
-  const reservation = await prisma.reservation.findUnique({
-    where: {
-      id: reservationId,
-    },
-  });
-
-  if (!reservation) {
-    throw new AppError(status.NOT_FOUND, "Reservation not found");
-  }
-
-  const payment = await prisma.payment.upsert({
-    where: { reservationId },
-    update: {
-      amount: reservation.totalPrice,
-      status: PaymentStatus.SUCCESS,
-      transactionId: tran_id,
-      paymentMethod: PaymentMethod.SSLCOMMERZ,
-    },
-    create: {
-      reservationId,
-      amount: reservation.totalPrice,
-      currency: "BDT",
-      status: PaymentStatus.SUCCESS,
-      transactionId: tran_id,
-      paymentMethod: PaymentMethod.SSLCOMMERZ,
-    },
-  });
-
-  await prisma.reservation.update({
-    where: {
-      id: reservationId,
-    },
-    data: {
-      status: "CONFIRMED",
-    },
-  });
-
-  return payment;
 };

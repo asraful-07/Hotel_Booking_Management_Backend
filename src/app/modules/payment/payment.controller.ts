@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { createPayment, handlePaymentSuccess } from "./payment.service";
-import { envVars } from "../../config/env";
 
 export const PaymentController = {
   createPayment: async (req: Request, res: Response) => {
@@ -16,26 +15,16 @@ export const PaymentController = {
 
   paymentSuccess: async (req: Request, res: Response) => {
     try {
-      const { tran_id } = req.body;
-
-      console.log("res", tran_id);
-
-      console.log("SSL SUCCESS BODY:", req.body);
-
-      const payment = await handlePaymentSuccess(tran_id);
-
-      // ✅ redirect frontend
-      return res.redirect(
-        `${envVars.FRONTEND_URL}/payment/payment-success/${tran_id}`,
-      );
+      const result = await handlePaymentSuccess(req, res);
+      return result;
     } catch (err: any) {
-      console.error(err);
       return res.status(500).json({
         status: "fail",
         message: err.message,
       });
     }
   },
+
   paymentFail: async (req: Request, res: Response) => {
     return res
       .status(400)
