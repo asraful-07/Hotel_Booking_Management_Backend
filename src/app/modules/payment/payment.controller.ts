@@ -1,5 +1,13 @@
 import { Request, Response } from "express";
-import { createPayment, handlePaymentSuccess } from "./payment.service";
+import {
+  createPayment,
+  getPaymentHistoryService,
+  getsPaymentHistoryService,
+  handlePaymentSuccess,
+} from "./payment.service";
+import { catchAsync } from "../../shared/catchAsync";
+import { sendResponse } from "../../shared/sendResponse";
+import status from "http-status";
 
 export const PaymentController = {
   createPayment: async (req: Request, res: Response) => {
@@ -31,3 +39,27 @@ export const PaymentController = {
       .json({ status: "fail", message: "Payment failed or canceled" });
   },
 };
+
+export const getsPaymentHistoryController = catchAsync(
+  async (req: Request, res: Response) => {
+    const payment = await getsPaymentHistoryService();
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      message: "Payment history retrieved successfully",
+      success: true,
+      data: payment,
+    });
+  },
+);
+
+export const getPaymentHistoryController = catchAsync(
+  async (req: Request, res: Response) => {
+    const payment = await getPaymentHistoryService(req.params.id as string);
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      message: "Payment history retrieved successfully",
+      success: true,
+      data: payment,
+    });
+  },
+);

@@ -113,3 +113,34 @@ export const handlePaymentSuccess = async (req: any, res: any) => {
     });
   }
 };
+
+export const getsPaymentHistoryService = async () => {
+  const payments = await prisma.payment.findMany({
+    include: {
+      reservation: {
+        include: {
+          room: true,
+          user: true,
+        },
+      },
+    },
+  });
+
+  return payments;
+};
+
+export const getPaymentHistoryService = async (id: string) => {
+  const payment = await prisma.payment.findUnique({
+    where: { id },
+    include: {
+      reservation: {
+        include: {
+          room: true,
+          user: true,
+        },
+      },
+    },
+  });
+
+  return payment;
+};
