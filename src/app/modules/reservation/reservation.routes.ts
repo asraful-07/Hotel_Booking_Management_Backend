@@ -12,17 +12,17 @@ router.post(
 );
 router.get(
   "/",
-  checkAuth(UserRole.MANAGER, UserRole.CUSTOMER),
+  checkAuth(UserRole.MANAGER, UserRole.ADMIN, UserRole.CUSTOMER),
   ReservationController.gestMyReservation,
 );
 router.get(
   "/:id",
-  checkAuth(UserRole.MANAGER, UserRole.CUSTOMER),
+  checkAuth(UserRole.MANAGER, UserRole.ADMIN, UserRole.CUSTOMER),
   ReservationController.getReservationById,
 );
 router.patch(
   "/:id",
-  checkAuth(UserRole.MANAGER),
+  checkAuth(UserRole.MANAGER, UserRole.ADMIN),
   ReservationController.updateReservationStatus,
 );
 router.patch(
