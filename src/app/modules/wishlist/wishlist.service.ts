@@ -78,40 +78,6 @@ export const getMyWishlistService = async (user: IRequestUser) => {
   return result;
 };
 
-// Delete Wishlist
-export const deleteWishlistService = async (user: IRequestUser, id: string) => {
-  const existsUser = await prisma.user.findUnique({
-    where: {
-      email: user.email,
-    },
-  });
-
-  if (!existsUser) {
-    throw new AppError(status.NOT_FOUND, "User not found");
-  }
-
-  const isExist = await prisma.wishlist.findUnique({
-    where: {
-      userId_roomId: {
-        userId: existsUser.id,
-        roomId: id,
-      },
-    },
-  });
-
-  if (!isExist) {
-    throw new AppError(status.NOT_FOUND, "Wishlist item not found");
-  }
-
-  const result = await prisma.wishlist.delete({
-    where: {
-      id: id,
-    },
-  });
-
-  return result;
-};
-
 // Clear Wishlist
 export const clearWishlistService = async (user: IRequestUser) => {
   const existsUser = await prisma.user.findUnique({
@@ -127,6 +93,37 @@ export const clearWishlistService = async (user: IRequestUser) => {
   const result = await prisma.wishlist.deleteMany({
     where: {
       userId: existsUser.id,
+    },
+  });
+
+  return result;
+};
+
+// Delete Wishlist
+export const deleteWishlistService = async (user: IRequestUser, id: string) => {
+  const existsUser = await prisma.user.findUnique({
+    where: {
+      email: user.email,
+    },
+  });
+
+  if (!existsUser) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
+  const isExist = await prisma.wishlist.findUnique({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!isExist) {
+    throw new AppError(status.NOT_FOUND, "Wishlist item not found");
+  }
+
+  const result = await prisma.wishlist.delete({
+    where: {
+      id: id,
     },
   });
 

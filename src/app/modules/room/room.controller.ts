@@ -3,6 +3,7 @@ import { catchAsync } from "../../shared/catchAsync";
 import { RoomService } from "./room.service";
 import { sendResponse } from "../../shared/sendResponse";
 import status from "http-status";
+import { paginationSorting } from "../../utils/paginationSorting";
 
 const createRoom = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -17,13 +18,28 @@ const createRoom = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getsRoom = catchAsync(async (req: Request, res: Response) => {
-  const result = await RoomService.getsRoom();
+  const { search } = req.query;
+
+  const searchString = typeof search === "string" ? search : undefined;
+
+  //* pagination and sorting desc
+  const { page, limit, skip, sortBy, sortOrder } = paginationSorting(req.query);
+
+  const result = await RoomService.getsRoom({
+    search: searchString,
+    page,
+    limit,
+    skip,
+    sortBy,
+    sortOrder,
+  });
 
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,
     message: "Fetch Room successfully",
-    data: result,
+    data: result.data,
+    meta: result.pagination,
   });
 });
 

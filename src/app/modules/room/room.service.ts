@@ -2,6 +2,7 @@ import status from "http-status";
 import AppError from "../../errorHelper/AppError";
 import { prisma } from "../../lib/prisma";
 import { ICreatedRoomPayload, IUpdateRoomPayload } from "./room.interface";
+import { RoomWhereInput } from "../../../generated/prisma/models";
 
 const createRoom = async (payload: ICreatedRoomPayload) => {
   const {
@@ -58,8 +59,41 @@ const createRoom = async (payload: ICreatedRoomPayload) => {
   return result;
 };
 
-const getsRoom = async () => {
+const getsRoom = async ({
+  search,
+  page,
+  limit,
+  skip,
+  sortBy,
+  sortOrder,
+}: {
+  search: string | undefined;
+  page: number;
+  limit: number;
+  skip: number;
+  sortBy: string;
+  sortOrder: string;
+}) => {
+  const addConnection: RoomWhereInput[] = [];
+
+  if (search) {
+    addConnection.push({
+      name: {
+        contains: search as string,
+        mode: "insensitive",
+      },
+    });
+  }
+
   const result = await prisma.room.findMany({
+    where: {
+      AND: addConnection,
+    },
+    take: limit,
+    skip,
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
     include: {
       roomType: true,
       images: true,
@@ -69,7 +103,23 @@ const getsRoom = async () => {
       wishlists: true,
     },
   });
-  return result;
+
+  //* pagination
+  const total = await prisma.room.count({
+    where: {
+      AND: addConnection,
+    },
+  });
+
+  return {
+    data: result,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 const getSimilarRooms = async (roomId: string) => {

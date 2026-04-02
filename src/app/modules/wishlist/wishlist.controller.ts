@@ -36,19 +36,6 @@ export const getMyWishlistController = catchAsync(
   },
 );
 
-export const deleteWishlistController = catchAsync(
-  async (req: Request, res: Response) => {
-    const user = req.user;
-    const result = await deleteWishlistService(user, req.params.id as string);
-    sendResponse(res, {
-      httpStatusCode: status.OK,
-      success: true,
-      message: "Delete wishlist successfully",
-      data: result,
-    });
-  },
-);
-
 export const clearWishlistController = catchAsync(
   async (req: Request, res: Response) => {
     const user = req.user;
@@ -57,6 +44,19 @@ export const clearWishlistController = catchAsync(
       httpStatusCode: status.OK,
       success: true,
       message: "Clear wishlist successfully",
+      data: result,
+    });
+  },
+);
+
+export const deleteWishlistController = catchAsync(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const result = await deleteWishlistService(user, req.params.id as string);
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Delete wishlist successfully",
       data: result,
     });
   },

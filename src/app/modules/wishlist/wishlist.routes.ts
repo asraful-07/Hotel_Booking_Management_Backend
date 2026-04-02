@@ -10,9 +10,26 @@ import { UserRole } from "../../../generated/prisma/enums";
 
 const router = Router();
 
-router.post("/", checkAuth(UserRole.CUSTOMER), createWishlistController);
-router.get("/", checkAuth(UserRole.CUSTOMER), getMyWishlistController);
-router.delete("/:id", checkAuth(UserRole.CUSTOMER), deleteWishlistController);
-router.delete("/clear", checkAuth(UserRole.CUSTOMER), clearWishlistController);
+router.post(
+  "/",
+  checkAuth(UserRole.ADMIN, UserRole.MANAGER, UserRole.CUSTOMER),
+  createWishlistController,
+);
+router.get(
+  "/",
+  checkAuth(UserRole.ADMIN, UserRole.MANAGER, UserRole.CUSTOMER),
+  getMyWishlistController,
+);
+router.delete(
+  "/clear",
+  checkAuth(UserRole.ADMIN, UserRole.MANAGER, UserRole.CUSTOMER),
+  clearWishlistController,
+);
+
+router.delete(
+  "/:id",
+  checkAuth(UserRole.ADMIN, UserRole.MANAGER, UserRole.CUSTOMER),
+  deleteWishlistController,
+);
 
 export const WishlistRoutes = router;
