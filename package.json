@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch --env-file=.env ./src/server.ts",
-    "build": "tsc",
+    "build": "tsup",
     "start": "node dist/server.js",
-    "migrate": "prisma migrate deploy",
-    "generate": "prisma generate"
+    "lint": "eslint ./src/**/*",
+    "migrate": "prisma migrate dev",
+    "generate": "prisma generate",
+    "postinstall": "prisma generate"
   },
   "repository": {
     "type": "git",
@@ -46,6 +47,7 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0",
     "qs": "^6.15.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0"
   }
 }
